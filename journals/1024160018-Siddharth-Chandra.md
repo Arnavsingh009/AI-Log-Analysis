@@ -23,3 +23,9 @@
 * Designed layout wireframes for live incident feeds, error velocity visualizers, and status transition workflows.
 * Executed end-to-end integration tests by generating synthetic error traffic and validating API responses against Swagger documentation.
 * Assembled the project presentation materials and demonstrated the working ingestion prototype for Sprint 1 review.
+
+## Week 5 (Aug 31 - Sep 6): LLM Model Migration, Dashboard Diagnostics & Alerting Pipeline
+* Audited Groq API model availability and migrated inference from decommissioned endpoints to active models (`openai/gpt-oss-120b` and `openai/gpt-oss-20b`).
+* Engineered resilient regex-based JSON response sanitation in `ai_service.py` to handle markdown-wrapped LLM completions without parser exceptions.
+* Resolved dashboard frontend data-binding bugs in `index.html`, enabling real-time rendering of AI root-cause analysis, severity ratings, and status updates.
+* Implemented the automated webhook alerting module (`app/services/alerting.py`) and resolved MkDocs theme configuration errors in the GitHub Actions CI/CD deployment workflow.
