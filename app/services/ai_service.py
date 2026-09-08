@@ -9,7 +9,7 @@ load_dotenv()
 def analyze_stack_trace(service_name: str, message: str, stack_trace: str) -> dict:
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
-        print("❌ [AI ERROR]: GROQ_API_KEY is missing from environment variables.")
+        print(" [AI ERROR]: GROQ_API_KEY is missing from environment variables.")
         return {
             "root_cause": "Missing GROQ_API_KEY in .env",
             "affected_component": service_name,
@@ -55,7 +55,7 @@ Stack Trace:
         return json.loads(clean_text)
 
     except Exception as exc:
-        print(f"❌ [AI ERROR in ai_service.py]: {repr(exc)}")
+        print(f"[AI ERROR in ai_service.py]: {repr(exc)}")
         return {
             "root_cause": f"Analysis encountered an error: {str(exc)[:120]}",
             "affected_component": service_name,

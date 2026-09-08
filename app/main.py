@@ -28,7 +28,7 @@ def process_error_triage(payload_dict: dict, incident_id: str):
     msg = payload_dict.get("message", "")
     stack = payload_dict.get("stack_trace") or msg
 
-    print(f"🚀 [WORKER STARTED] Triage started for {service} (ID: {incident_id[:8]})")
+    print(f" [WORKER STARTED] Triage started for {service} (ID: {incident_id[:8]})")
 
     try:
         sig = generate_signature(service, msg, stack)
@@ -43,7 +43,7 @@ def process_error_triage(payload_dict: dict, incident_id: str):
             set_cached_rca(sig, analysis)
 
     except Exception as exc:
-        print(f"❌ [WORKER EXCEPTION]: {exc}")
+        print(f" [WORKER EXCEPTION]: {exc}")
         analysis = {
             "root_cause": f"Triage worker failure: {str(exc)}",
             "affected_component": service,
@@ -55,7 +55,7 @@ def process_error_triage(payload_dict: dict, incident_id: str):
     if incident_id in incidents_db:
         incidents_db[incident_id]["ai_analysis"] = analysis
         incidents_db[incident_id]["status"] = "Investigating"
-        print(f"✅ [SUCCESS] Incident {incident_id[:8]} updated with diagnosis!")
+        print(f" [SUCCESS] Incident {incident_id[:8]} updated with diagnosis!")
 
 @app.post("/api/v1/logs")
 async def ingest_log(payload: LogPayload, background_tasks: BackgroundTasks):
@@ -78,7 +78,7 @@ async def ingest_log(payload: LogPayload, background_tasks: BackgroundTasks):
             "status": "Open",
             "ai_analysis": None,
         }
-        print(f"➕ Registered incident {incident_id[:8]} in memory. Scheduling triage...")
+        print(f" Registered incident {incident_id[:8]} in memory. Scheduling triage...")
         background_tasks.add_task(process_error_triage, log_dict, incident_id)
 
     return {"status": "accepted"}
