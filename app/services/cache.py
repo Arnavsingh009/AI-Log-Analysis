@@ -1,32 +1,26 @@
 import hashlib
 import json
-import redis
-import os
+from typing import Optional, Dict, Any
 
-REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
-REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+# In-memory fallback dictionary
+_MEMORY_CACHE: Dict[str, Dict[str, Any]] = {}
 
-# Initialize Redis client
-redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0, decode_responses=True)
 
 def generate_signature(service_name: str, message: str, stack_trace: str) -> str:
-    """Creates a deterministic MD5 hash of the error signature."""
-    raw_key = f"{service_name}:{message}:{stack_trace}"
-    return hashlib.md5(raw_key.encode("utf-8")).hexdigest()
+    """Generate deterministic SHA-256 hash from error details."""
+    norm_trace = "\n".join(line.strip() for line in (stack_trace or "").splitlines() if line.strip())
+    raw = f"{service_name}:{message}:{norm_trace}"
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-def get_cached_rca(signature: str):
-    """Retrieve existing RCA diagnosis if present in cache."""
-    try:
-        data = redis_client.get(f"rca:{signature}")
-        if data:
-            return json.loads(data)
-    except Exception:
-        return None
+
+def get_cached_rca(signature_hash: str) -> Optional[Dict[str, Any]]:
+    """Retrieve RCA payload from cache (memory or Redis)."""
+    # Fast path: in-memory cache
+    if signature_hash in _MEMORY_CACHE:
+        return _MEMORY_CACHE[signature_hash]
     return None
 
-def set_cached_rca(signature: str, analysis: dict, ttl_seconds: int = 3600):
-    """Cache RCA analysis for 1 hour."""
-    try:
-        redis_client.setex(f"rca:{signature}", ttl_seconds, json.dumps(analysis))
-    except Exception:
-        pass
+
+def set_cached_rca(signature_hash: str, rca_data: Dict[str, Any]) -> None:
+    """Store RCA payload in cache."""
+    _MEMORY_CACHE[signature_hash] = rca_data
