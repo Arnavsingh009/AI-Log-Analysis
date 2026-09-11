@@ -29,3 +29,10 @@
 * Engineered resilient regex-based JSON response sanitation in `ai_service.py` to handle markdown-wrapped LLM completions without parser exceptions.
 * Resolved dashboard frontend data-binding bugs in `index.html`, enabling real-time rendering of AI root-cause analysis, severity ratings, and status updates.
 * Implemented the automated webhook alerting module (`app/services/alerting.py`) and resolved MkDocs theme configuration errors in the GitHub Actions CI/CD deployment workflow.
+
+## Week 6 (Sep 7 - Sep 13): Live Telemetry UI Integration, Cache Signature Verification & Git Cleanliness
+* Refactored the dashboard frontend (`app/templates/index.html`) using Tailwind CSS to display live SLA telemetry cards directly integrated with `GET /api/v1/metrics`.
+* Implemented automated client-side polling every 3 seconds to reflect real-time log ingestion volumes, open vs. resolved triage queues, and deduplication efficiency.
+* Validated the deterministic SHA-256 signature deduplication mechanism, ensuring recurring exception stack traces bypass external inference and update the cache hit-to-miss ratio.
+* Hardened local repository cleanliness by updating `.gitignore` to omit SQLite binary database files (`incidents.db`) and prevent upstream version control merge conflicts.
+* Synchronized local project commits with the remote GitHub repository by resolving divergent branch histories through a clean rebase workflow.
