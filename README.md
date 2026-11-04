@@ -255,12 +255,12 @@ _Add dashboard screenshots to `assets/` and embed them here:_
 
 ## Team
 
-| Name | Roll No. | Role |
+| Name | Roll No. | 
 |---|---|---|
-| Arnav Singh | _your roll no._ | _your role_ |
-| _teammate_ | | |
+| Arnav Singh | 1024160011 | 
+| Siddharth Chandra |1024160011|
 
-**Mentor:** _faculty name_
+**Mentor:** Dr Jeelani Asif
 
 ---
 
