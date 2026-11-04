@@ -256,7 +256,6 @@ _Add dashboard screenshots to `assets/` and embed them here:_
 ## Team
 
 | Name | Roll No. | 
-|---|---|---|
 | Arnav Singh | 1024160011 | 
 | Siddharth Chandra |1024160011|
 
