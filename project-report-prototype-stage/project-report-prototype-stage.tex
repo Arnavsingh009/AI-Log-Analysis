@@ -3,14 +3,22 @@
 \usepackage[utf8]{inputenc}
 \usepackage[margin=1in,bottom=1.2in]{geometry}
 \usepackage{graphicx}
+\usepackage{placeins}
+\usepackage{float}
 \usepackage{booktabs}
-\usepackage{hyperref}
+\usepackage[hidelinks]{hyperref}
 \usepackage{amsmath}
 \usepackage{titlesec}
 \usepackage{setspace}
 \usepackage{fancyhdr}
 
 \onehalfspacing
+
+% Keep the report compilable even if diagram files are not yet in the root folder
+\newcommand{\optionalfigure}[2]{%
+  \IfFileExists{#1}{\includegraphics[width=#2\textwidth]{#1}}%
+  {\fbox{\parbox[c][4cm][c]{0.78\textwidth}{\centering Diagram not included in this package.\\[4pt]\texttt{\detokenize{#1}}}}}%
+}
 
 % ==================== FOOTER CONFIGURATION ====================
 \pagestyle{fancy}
@@ -101,7 +109,23 @@ The primary objectives of this system adhere to the SMART criteria:
 \chapter{Methodology and Design}
 
 \section{System Architecture}
-The system employs a decoupled, asynchronous microservices architecture that isolates ingestion, caching, AI inference, relational persistence, and presentation.
+The system employs a decoupled, asynchronous microservices architecture that isolates ingestion, caching, AI inference, relational persistence, and presentation. Figure~\ref{fig:dfd-level0} illustrates the high-level system context, while Figure~\ref{fig:dfd-level1} details the major internal data processing pipelines.
+
+\begin{figure}[htbp]
+  \centering
+  \optionalfigure{AI_Log_Analysis_Diagrams (1) (1)-DFD Level 0 (1).png}{0.88}
+  \caption{Level-0 Context Data Flow Diagram for the AI-Powered Log Analysis and Incident Triage System}
+  \label{fig:dfd-level0}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \optionalfigure{AI_Log_Analysis_Diagrams (1) (1)-DFD Level 1 (1).png}{0.92}
+  \caption{Level-1 Data Flow Diagram Illustrating Major Internal Processes and Storage Tiers}
+  \label{fig:dfd-level1}
+\end{figure}
+
+\FloatBarrier
 
 \subsection{High-Level Design}
 The architecture consists of four distinct tiers:
@@ -111,6 +135,24 @@ The architecture consists of four distinct tiers:
   \item \textbf{Inference and Caching Subsystem:} A cache layer utilizing SHA-256 log signature hashing to bypass downstream inference on duplicate crashes, combined with an LLM triage engine invoking Groq API completions with sanitizing regular-expression parsers.
   \item \textbf{Storage, Telemetry, and Presentation Tier:} An ORM layer managing persistent transactional state, accompanied by a dynamic Tailwind CSS live stream dashboard and automated alert webhook dispatchers.
 \end{enumerate}
+
+Figure~\ref{fig:activity-diagram} captures the end-to-end operational swimlane flow across microservices, the ingestion gateway, and the AI triage engine, while Figure~\ref{fig:dfd-level2} decomposes the Level-2 AI Triage and Root-Cause Analysis (P4) subsystem.
+
+\begin{figure}[htbp]
+  \centering
+  \optionalfigure{SRE_Log_Triage_Activity_Diagram.png}{0.82}
+  \caption{UML Activity and Swimlane Diagram for End-to-End Incident Triage Flow}
+  \label{fig:activity-diagram}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \optionalfigure{AI_Log_Analysis_Diagrams (1) (1)-DFD Level 2 (1).png}{0.90}
+  \caption{Level-2 Data Flow Diagram for AI Triage and Root-Cause Analysis (Process P4)}
+  \label{fig:dfd-level2}
+\end{figure}
+
+\FloatBarrier
 
 \subsection{Technical Stack}
 \begin{itemize}
@@ -124,6 +166,15 @@ The architecture consists of four distinct tiers:
 \end{itemize}
 
 \section{Implementation Details}
+
+Figure~\ref{fig:use-case-diagram} outlines the primary system actors and interactions across log sources, SRE engineers, the LLM inference service, and webhook notification channels.
+
+\begin{figure}[htbp]
+  \centering
+  \optionalfigure{AI_Log_Analysis_Diagrams (1) (1)-Use Case Diagram (1).png}{0.82}
+  \caption{Use Case Diagram for the Autonomous AI-Driven SRE Log Triage System}
+  \label{fig:use-case-diagram}
+\end{figure}
 
 \subsection{Module 1: Ingestion Gateway \& Signature-Based Caching}
 The gateway exposes \texttt{POST /api/v1/logs}, validating fields such as \texttt{service\_name}, \texttt{level}, \texttt{message}, and \texttt{stack\_trace}. Normal operations (\texttt{INFO}, \texttt{WARNING}) are incremented directly into telemetry registries. Incoming \texttt{ERROR} or \texttt{CRITICAL} events trigger an incident pipeline. 
@@ -142,7 +193,16 @@ For unique error signatures, the incident is dispatched to Groq LLM inference. T
 The structured response strictly enforces four keys: \texttt{root\_cause}, \texttt{affected\_component}, \texttt{severity}, and \texttt{suggested\_fix}.
 
 \subsection{Module 3: Database Persistence \& Webhook Dispatcher}
-The ephemeral incident registry was migrated to a persistent SQLite schema via the \texttt{IncidentModel} class in SQLAlchemy. Incidents initialize with status \texttt{Open}, transition to \texttt{Investigating} upon LLM analysis attachment, and allow on-call engineers to flag them as \texttt{Resolved}. For any incident categorized as \texttt{CRITICAL} or \texttt{HIGH}, an outbound dispatcher posts rich-embed notification payloads to pre-configured Discord or Slack webhook endpoints.
+The ephemeral incident registry was migrated to a persistent SQLite schema via the \texttt{IncidentModel} class in SQLAlchemy. Incidents initialize with status \texttt{Open}, transition to \texttt{Investigating} upon LLM analysis attachment, and allow on-call engineers to flag them as \texttt{Resolved}. For any incident categorized as \texttt{CRITICAL} or \texttt{HIGH}, an outbound dispatcher posts rich-embed notification payloads to pre-configured Discord or Slack webhook endpoints. Figure~\ref{fig:worker-state-flow} illustrates the asynchronous background triage worker, SQLite persistence transitions, and live dashboard rendering pipeline.
+
+\begin{figure}[htbp]
+  \centering
+  \optionalfigure{ER-Diagram (1).png}{0.74}
+  \caption{Asynchronous Background Triage Worker, Persistence State Transitions, and Dashboard Polling Flow}
+  \label{fig:worker-state-flow}
+\end{figure}
+
+\FloatBarrier
 
 % ==================== CHAPTER 3: RESULTS & EVALUATION ====================
 \chapter{Results and Evaluation}
