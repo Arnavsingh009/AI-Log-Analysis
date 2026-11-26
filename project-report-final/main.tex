@@ -1,0 +1,381 @@
+\documentclass[12pt,a4paper,oneside]{report}
+
+% ---------- Packages ----------
+\usepackage[a4paper,margin=1in,headheight=15pt]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{mathptmx}              % Times-family text and math
+\usepackage{graphicx}
+\usepackage{adjustbox}             % non-destructive trimming / size limits for figures
+\usepackage{float}
+\usepackage[table]{xcolor}
+\usepackage{array,booktabs,tabularx}
+\usepackage{enumitem}
+\usepackage{needspace}
+\usepackage{setspace}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{caption}
+\usepackage[hidelinks]{hyperref}
+
+% ---------- Formatting ----------
+\onehalfspacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\renewcommand{\arraystretch}{1.2}
+\setlist{nosep,leftmargin=1.5em}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{UCS503 -- Software Engineering Lab}
+\fancyhead[R]{AI-Driven SRE Log Triage}
+\fancyfoot[C]{\thepage}
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\centering}
+  {\chaptername\ \thechapter}{8pt}{\Large}
+\titlespacing*{\chapter}{0pt}{0pt}{16pt}
+\titleformat{\section}{\normalfont\Large\bfseries}{\thesection}{0.8em}{}
+\titleformat{\subsection}{\normalfont\large\bfseries}{\thesubsection}{0.8em}{}
+\captionsetup{font=small,labelfont=bf,labelsep=colon,skip=6pt}
+\renewcommand{\bibname}{References}
+
+% ---------- Figure helpers ----------
+% Renders the actual image file if present in Overleaf/local directory,
+% and gracefully falls back to a framed box if an image is not yet uploaded.
+\newcommand{\diagram}[4][]{%
+  \begin{figure}[H]
+    \centering
+    \IfFileExists{#2}{%
+      \adjustbox{#1,max width=\linewidth,max height=0.78\textheight}{\includegraphics{#2}}%
+    }{%
+      \framebox{\parbox{0.88\linewidth}{\centering
+        \vspace{2.2cm}
+        \textbf{Diagram Placeholder (Upload file to render)} \\
+        \small\texttt{\detokenize{#2}}
+        \vspace{2.2cm}
+      }}%
+    }%
+    \caption{#3}\label{#4}
+  \end{figure}}
+
+\newcommand{\landdiagram}[4][]{%
+  \begin{figure}[H]
+    \centering
+    \IfFileExists{#2}{%
+      \adjustbox{#1,max width=\linewidth,max height=0.78\textheight}{\includegraphics{#2}}%
+    }{%
+      \framebox{\parbox{0.88\linewidth}{\centering
+        \vspace{2.2cm}
+        \textbf{Diagram Placeholder (Upload file to render)} \\
+        \small\texttt{\detokenize{#2}}
+        \vspace{2.2cm}
+      }}%
+    }%
+    \caption{#3}\label{#4}
+  \end{figure}}
+
+% ---------- References: heading that does not force a new page ----------
+\makeatletter
+\renewenvironment{thebibliography}[1]
+  {\section*{References}\addcontentsline{toc}{chapter}{References}%
+   \list{\@biblabel{\@arabic\c@enumiv}}%
+        {\settowidth\labelwidth{\@biblabel{#1}}%
+         \leftmargin\labelwidth\advance\leftmargin\labelsep
+         \usecounter{enumiv}\let\p@enumiv\@empty
+         \renewcommand\theenumiv{\@arabic\c@enumiv}\setlength{\itemsep}{2pt}}%
+   \sloppy\clubpenalty4000\widowpenalty4000}
+  {\endlist}
+\makeatother
+
+\begin{document}
+
+% ================= COVER PAGE =================
+\begin{titlepage}
+  \centering
+  \vspace*{0.5cm}
+  {\large\bfseries UCS503 -- Software Engineering Lab\par}
+  \vspace{1.8cm}
+  {\Huge\bfseries Autonomous AI-Driven SRE Log Triage \& Incident Management System\par}
+  \vspace{0.3cm}
+  {\Large High-Throughput Telemetry Ingestion, Cryptographic Deduplication, and LLM Root Cause Analysis\par}
+  \vspace{1.2cm}
+  {\Large UCS 503 Software Engineering Project Report\par}
+  \vspace{0.2cm}
+  {\large End-Semester Evaluation\par}
+  \vspace{1.2cm}
+  {\large\bfseries Submitted by:\par}
+  \vspace{0.25cm}
+  Arnav \hspace{1.2cm} 1024160011\\
+  Siddharth Chandra \hspace{1.2cm} 1024160018\\
+  Arshit Bansal \hspace{1.2cm} 1024160020\\
+  \vspace{0.55cm}
+  {\large BE Third Year, CSE\par}
+  \vspace{0.2cm}
+  Group No: 2
+  \vfill
+  {\large\bfseries Submitted to:\par}
+  Dr. Jeelani Asif
+  \vfill
+  {\large Computer Science and Engineering Department\\
+  TIET, Patiala\\
+  November 2026\par}
+\end{titlepage}
+
+
+% ================= CHAPTER 1 =================
+\chapter{Project Selection Phase}
+
+\section{Software Bid}
+\textbf{Problem Statement.} Modern cloud-native systems and distributed microservice architectures generate millions of unstructured log events and multi-line stack traces during cascading outages. Site Reliability Engineers (SREs) and on-call developers suffer from acute alert fatigue, spending critical minutes manually querying log aggregators, grouping repetitive exceptions, and correlating root causes across decoupled services. Existing rule-based parsers fail on novel runtime errors, while naive invocation of Large Language Models (LLMs) per log event introduces high inference latency, rate-limit bottlenecks, and prohibitive operational costs.
+
+\textbf{Proposed Solution.} The Autonomous AI-Driven SRE Log Triage \& Incident Management System is an intelligent observability and automated triage platform that streamlines incident response through:
+\begin{itemize}
+  \item \textbf{Asynchronous Ingestion Gateway:} A non-blocking FastAPI REST gateway (\texttt{POST /api/v1/logs}) that validates incoming log schemas via Pydantic without stalling upstream microservices.
+  \item \textbf{Deterministic SHA-256 Deduplication:} Normalization of error messages and stack traces into cryptographic SHA-256 signatures to identify duplicate failures immediately.
+  \item \textbf{Zero-Inference Signature Caching:} An in-memory / Redis-compatible key-value lookup layer that resolves recurring error signatures in sub-10\,ms, bypassing redundant LLM inference.
+  \item \textbf{Autonomous AI Root Cause Analysis (RCA):} Non-blocking background workers that query low-latency Groq LLM endpoints to synthesize structured JSON diagnostics (root cause, affected component, severity, and code remediation).
+  \item \textbf{Real-Time SRE Telemetry Dashboard \& Alerting:} A live-polling Tailwind CSS web interface with session authentication, lifecycle management (\texttt{Open} $\rightarrow$ \texttt{Investigating} $\rightarrow$ \texttt{Resolved}), and Slack/Discord webhook alerts.
+\end{itemize}
+
+\textbf{Scope of Work.}
+\begin{itemize}
+  \item Non-blocking ingestion of structured JSON telemetry logs across distributed services (\texttt{auth-service}, \texttt{payment-service}, \texttt{order-service}, \texttt{inventory-service}).
+  \item Strict payload schema validation and rejection of malformed requests with HTTP 422 responses.
+  \item Stack trace normalization (stripping dynamic memory addresses, timestamps, and request IDs) and deterministic SHA-256 signature generation.
+  \item Cache-aside lookup strategy separating unique incidents (cache misses) from recurring cascade storms (cache hits).
+  \item Background LLM inference via the Groq SDK with regex sanitization to guarantee clean JSON extraction.
+  \item Relational persistence of incidents, diagnostic payloads, and audit timestamps using SQLAlchemy ORM and SQLite.
+  \item Automated multi-channel webhook notifications (Slack/Discord) for \texttt{HIGH} and \texttt{CRITICAL} severity incidents with alert suppression.
+  \item Authenticated web command center with 3-second client-side polling, search/status filtering, and interactive incident state transitions.
+\end{itemize}
+
+\section{Project Overview}
+\textbf{Project:} Autonomous AI-Driven SRE Log Triage \& Incident Management System.
+
+The system acts as an intelligent ingestion and diagnostic barrier between production microservices and on-call engineering teams. Rather than flooding human operators with thousands of identical raw exceptions, the platform groups identical traces cryptographically, invokes AI inference exactly once per unique failure signature, and surfaces actionable remediation guidance on a live dashboard.
+
+\textbf{Objectives.}
+\begin{itemize}
+  \item Achieve high-throughput, non-blocking log ingestion ($\ge 150$\,req/s) without degrading upstream microservice response times.
+  \item Eliminate redundant LLM API calls through deterministic SHA-256 signature caching, achieving sub-10\,ms triage resolution on cache hits.
+  \item Provide structured, human-readable root cause explanations and code fixes alongside automated severity classification.
+  \item Deliver real-time SLA telemetry (total logs ingested, active vs.\ resolved queues, cache hit/miss ratios) to on-call SREs.
+\end{itemize}
+
+\textbf{Users and External Systems.} The platform interacts with four primary actors and external systems (Table~\ref{tab:roles}).
+
+\begin{table}[H]
+\centering\small\singlespacing
+\caption{System actors and external interfaces}\label{tab:roles}
+\begin{tabularx}{\linewidth}{@{}l X@{}}
+\toprule
+\textbf{Actor / System} & \textbf{Main Responsibilities}\\
+\midrule
+Microservices / Log Sources & Emit structured JSON log payloads (\texttt{INFO}, \texttt{WARNING}, \texttt{ERROR}, \texttt{CRITICAL}) with stack traces to the ingestion gateway.\\
+Software Engineer / SRE & Authenticates into the web dashboard, monitors live telemetry metrics, inspects AI RCA diagnoses, filters incidents, and updates incident states (\texttt{Open} $\rightarrow$ \texttt{Investigating} $\rightarrow$ \texttt{Resolved}).\\
+LLM Service (Groq API) & Receives sanitized error contexts on cache misses and returns structured JSON containing root cause, affected module, severity, and remediation steps.\\
+Alert Channels (Slack / Discord) & Receive formatted webhook notifications when critical or high-severity incidents are detected.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+
+% ================= CHAPTER 2 =================
+\chapter{Analysis Phase}
+
+\section{Use Cases}
+Figure~\ref{fig:usecase} illustrates the four external actors and their system interactions. Microservices trigger log ingestion, which includes parsing, normalization, SHA-256 deduplication, and persistence. On-call SREs inspect live logs, search and filter incidents, review AI RCA reports, monitor error rates, and transition incident states.
+
+\diagram[max height=5.0in]{AI_Log_Analysis_Diagrams (1) (1)-Use Case Diagram (1).png}{AI-Powered Log Analysis \& Incident Triage System -- Use Case Diagram}{fig:usecase}
+
+\section{Activity and Swimlane Diagram}
+Figure~\ref{fig:activity} traces the end-to-end execution flow across three swimlanes: Microservices / Engineer Client, Ingestion \& Processing Layer, and AI Triage, Persistence \& Alerting. Incoming payloads undergo Pydantic schema validation; \texttt{INFO} and \texttt{WARNING} logs increment telemetry counters directly, whereas \texttt{ERROR} and \texttt{CRITICAL} payloads undergo stack trace normalization, SHA-256 hashing, cache lookup, background Groq inference (on cache miss), SQLite persistence, and webhook alerting.
+
+\diagram[max height=6.4in]{SRE_Log_Triage_Activity_Diagram.png}{End-to-End Incident Triage Flow -- UML Activity and Swimlane Diagram}{fig:activity}
+
+\section{Data Flow Diagrams}
+\subsection{DFD Level 0 -- System Context Diagram}
+The Level 0 context diagram (Figure~\ref{fig:dfd0}) models the entire platform as a single central process exchanging raw log streams with Microservices, diagnostic queries with the LLM Service, incident alerts with Slack/Discord, and live telemetry/status updates with the Software Engineer / SRE.
+
+\diagram[max height=3.8in]{AI_Log_Analysis_Diagrams (1) (1)-DFD Level 0 (1).png}{DFD Level 0 -- System Context Diagram}{fig:dfd0}
+
+\subsection{DFD Level 1 -- Major Internal Processes}
+Level 1 (Figure~\ref{fig:dfd1}) decomposes the platform into six core processes: Log Ingestion (P1), Log Processing \& Deduplication (P2), Storage \& Indexing (P3), AI Triage \& RCA (P4), Incident Management (P5), and Dashboard \& Alerting (P6), interacting with persistent data stores and the cache layer (D1--D3).
+
+\landdiagram{AI_Log_Analysis_Diagrams (1) (1)-DFD Level 1 (1).png}{DFD Level 1 -- Major Internal Processes}{fig:dfd1}
+
+\subsection{DFD Level 2 -- AI Triage and Root Cause Analysis (Process P4)}
+Level 2 (Figure~\ref{fig:dfd2}) expands Process P4 into eight fine-grained sub-processes (P4.1--P4.8): detecting critical errors, generating SHA-256 error signatures, querying the cache (D3), dispatching cache misses to the LLM service, generating structured RCA reports and remediation suggestions, caching the analysis, and forwarding updates to Incident Management.
+
+\landdiagram{AI_Log_Analysis_Diagrams (1) (1)-DFD Level 2 (1).png}{DFD Level 2 -- AI Triage \& Root Cause Analysis (Process P4)}{fig:dfd2}
+
+\needspace{5in}
+\section{Core Workflows and Business Rules}\label{sec:workflows}
+Table~\ref{tab:workflows} summarizes the core functional workflows, enforced business rules, and verifying integration tests.
+
+\begin{table}[H]
+\centering\footnotesize\singlespacing
+\caption{Core workflows, business rules, and verifying test cases}\label{tab:workflows}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{2.7cm} >{\raggedright\arraybackslash}p{2.2cm} X l@{}}
+\toprule
+\textbf{Workflow} & \textbf{Actors} & \textbf{Rule Enforced} & \textbf{Test}\\
+\midrule
+Log Ingestion \& Validation & Microservices, Ingestion Gateway &
+  Incoming JSON payloads must satisfy the \texttt{LogPayload} Pydantic schema. Valid logs return HTTP 200/202 immediately; malformed logs return HTTP 422 without crashing the server. &
+  TC-01, TC-02\\
+Non-Blocking Background Triage & Ingestion Gateway, Background Worker &
+  \texttt{ERROR} and \texttt{CRITICAL} payloads are delegated to FastAPI \texttt{BackgroundTasks} so external LLM latency never blocks upstream HTTP callers. &
+  TC-03\\
+SHA-256 Signature Deduplication & Triage Orchestrator, Cache Service &
+  Service name, normalized message, and stack trace are hashed via SHA-256. Cache hits return cached RCA results in $<10$\,ms; cache misses invoke Groq LLM once and populate the cache. &
+  TC-04\\
+Incident Lifecycle \& Telemetry & SRE Operator, Incident Database &
+  Incidents persist in SQLite with initial status \texttt{Open}, transition to \texttt{Investigating} upon triage, and can be marked \texttt{Resolved} via the dashboard, updating live metrics. &
+  TC-05\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+
+% ================= CHAPTER 3 =================
+\chapter{Design Phase}
+The system design models follow standard UML 2.5 notation~\cite{uml} and reflect the asynchronous Python/FastAPI backend architecture.
+
+\section{Database and Workflow Execution Design}
+Table~\ref{tab:schema} details the primary relational attributes of \texttt{IncidentModel} implemented via SQLAlchemy ORM on SQLite, while Figure~\ref{fig:workflow_detail} illustrates the detailed background worker branching logic (HTTP 422 validation guard, \texttt{INFO/WARNING} fast-path, SHA-256 cache hit/miss branches, and severity-gated webhook dispatch).
+
+\begin{table}[H]
+\centering\footnotesize\singlespacing
+\caption{Relational schema for \texttt{incidents} (\texttt{IncidentModel})}\label{tab:schema}
+\begin{tabularx}{\linewidth}{@{}>{\ttfamily\raggedright\arraybackslash}p{3.8cm} >{\ttfamily\raggedright\arraybackslash}p{2.4cm} X@{}}
+\toprule
+\textbf{Column} & \textbf{Type} & \textbf{Description}\\
+\midrule
+id & Integer (PK) & Auto-incrementing unique incident identifier.\\
+signature\_hash & String (Indexed) & Deterministic SHA-256 hash of service, message, and normalized stack trace.\\
+service\_name & String & Name of the originating microservice (e.g., \texttt{payment-service}).\\
+severity & String & Severity level (\texttt{INFO}, \texttt{WARNING}, \texttt{ERROR}, \texttt{CRITICAL}).\\
+status & String & Incident workflow state (\texttt{Open}, \texttt{Investigating}, \texttt{Resolved}).\\
+message & Text & Primary exception or error message string.\\
+stack\_trace & Text & Full multi-line exception stack trace.\\
+root\_cause & Text & AI-synthesized explanation of the underlying failure.\\
+suggested\_fix & Text & Actionable remediation steps or code fix recommended by the LLM.\\
+created\_at & DateTime & UTC timestamp recorded upon initial incident ingestion.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\diagram[max height=6.2in]{ER-Diagram (1).png}{Detailed Ingestion and Background Triage Worker Execution Flow}{fig:workflow_detail}
+
+\section{Sequence Diagram}
+Figure~\ref{fig:sequence} depicts the time-ordered message sequence inside Process P4 (AI Triage \& Root Cause Analysis). Using UML \texttt{alt} and \texttt{par} fragments, the diagram contrasts the \textbf{Cache Hit} path (steps 4--5, skipping LLM inference entirely) against the \textbf{Cache Miss} path (steps 6--14, querying the external LLM service, generating the RCA report and remediation suggestions, and concurrently persisting to cache and notifying Incident Management).
+
+\landdiagram{Sequence Diagram .png}{Autonomous AI-Driven SRE Log Triage -- Sequence Diagram}{fig:sequence}
+
+\section{Collaboration Diagram}
+Figure~\ref{fig:collab} illustrates the structural links and numbered message flow among runtime objects: \texttt{TrafficSimulator}, \texttt{IngestionGateway}, \texttt{LogPayload}, \texttt{TelemetryRegistry}, \texttt{IncidentDatabase}, \texttt{IncidentPipeline}, \texttt{CacheService}, \texttt{LLMTriageService}, \texttt{WebhookDispatcher}, and the \texttt{Dashboard} operated by the On-call Engineer.
+
+\landdiagram{Collaboration Diagram.png}{Autonomous AI-Driven SRE Log Triage -- Collaboration Diagram}{fig:collab}
+
+\section{Class Diagram}
+Figure~\ref{fig:class} presents the object-oriented class structure across the application layers, showing Pydantic models (\texttt{LogEntry}, \texttt{RCAResult}), enumerations (\texttt{LogLevel}, \texttt{Severity}, \texttt{IncidentStatus}), service classes (\texttt{TriageOrchestrator}, \texttt{CacheService}, \texttt{LLMTriageService}, \texttt{WebhookDispatcher}), the persistence repository (\texttt{IncidentRepository}, \texttt{IncidentModel}), and the \texttt{Dashboard} client.
+
+\landdiagram{SRE_Class_Diagram (1).png}{Autonomous AI-Driven SRE Log Triage -- UML Class Diagram}{fig:class}
+
+
+% ================= CHAPTER 4 =================
+\chapter{Implementation}
+
+\section{Deployment Architecture}
+Figure~\ref{fig:deployment} illustrates the physical and logical deployment topology. The Client Machine runs the HTML5/Tailwind CSS dashboard in a web browser, polling \texttt{/api/v1/incidents} and \texttt{/api/v1/metrics} every 3000\,ms. The Application Server hosts the Python Uvicorn ASGI runtime executing the FastAPI ingestion gateway, background triage pipeline, SQLAlchemy database layer, and signature cache, while communicating over HTTPS with Groq Cloud and Slack/Discord webhook endpoints.
+
+\landdiagram{Deployment Diagram.png}{Autonomous AI-Driven SRE Log Triage -- UML Deployment Diagram}{fig:deployment}
+
+\section{Application Modules and Tech Stack}
+The backend and frontend are implemented using Python 3.13, FastAPI, SQLAlchemy ORM, Groq SDK, and Tailwind CSS~\cite{fastapi,sqlalchemy,groq,tailwind}. Table~\ref{tab:modules} summarizes the project directory and module responsibilities.
+
+\begin{table}[H]
+\centering\footnotesize\singlespacing
+\caption{Implemented application modules and responsibilities}\label{tab:modules}
+\begin{tabularx}{\linewidth}{@{}>{\ttfamily\raggedright\arraybackslash}p{4.3cm} X@{}}
+\toprule
+\textbf{File / Module} & \textbf{Responsibility}\\
+\midrule
+app/main.py & FastAPI application entry point, REST API routes (\texttt{/api/v1/logs}, \texttt{/metrics}, \texttt{/incidents}), and cookie-based session authentication (\texttt{/login}, \texttt{/logout}).\\
+app/database.py & SQLAlchemy engine configuration (\texttt{sqlite:///./incidents.db}) and dependency-injected session factory (\texttt{get\_db}).\\
+app/models.py & Relational ORM definition (\texttt{IncidentModel}) with indexed SHA-256 signature lookups.\\
+app/schemas.py & Pydantic v2 validation contracts (\texttt{LogPayload}, \texttt{IncidentResponse}, \texttt{MetricsResponse}).\\
+app/services/ai\_service.py & Groq SDK integration (\texttt{openai/gpt-oss-120b} / \texttt{20b}) with regex JSON sanitization for structured RCA extraction.\\
+app/services/cache.py & Stack trace normalization, SHA-256 signature generation, and sub-10\,ms in-memory cache lookup with hit/miss telemetry counters.\\
+app/services/alerting.py & Severity-gated webhook dispatcher for Slack and Discord with duplicate alert suppression.\\
+app/templates/login.html & Authenticated SRE operator login interface.\\
+app/templates/index.html & Real-time dark-mode telemetry dashboard with 3-second polling, search/status filtering, and interactive incident resolution controls.\\
+scripts/log\_generator.py & Synthetic microservice traffic simulator emitting realistic error bursts across multiple services.\\
+scripts/benchmark.py & Asynchronous load testing harness built with \texttt{httpx} to evaluate ingestion throughput and tail latency.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+
+% ================= CHAPTER 5 =================
+\chapter{Testing and Performance Evaluation}
+
+\section{Automated Integration Test Suite (\texttt{pytest})}
+To verify pipeline correctness without consuming external LLM API tokens, an automated integration suite (\texttt{tests/test\_pipeline.py}) was implemented using \texttt{pytest} and FastAPI's \texttt{TestClient}~\cite{pytest}. All 5 integration tests execute in \textbf{2.23 seconds} with a \textbf{100\% pass rate} (Table~\ref{tab:tests}).
+
+\begin{table}[H]
+\centering\footnotesize\singlespacing
+\caption{Automated integration test cases in \texttt{tests/test\_pipeline.py}}\label{tab:tests}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{1.6cm} >{\ttfamily\raggedright\arraybackslash}p{4.3cm} X l@{}}
+\toprule
+\textbf{Test ID} & \textbf{Test Function} & \textbf{Verification Objective} & \textbf{Result}\\
+\midrule
+TC-01 & test\_ingest\_valid\_log & Verifies valid JSON payloads sent to \texttt{POST /api/v1/logs} return HTTP 200/202 with an incident acknowledgment ID. & Pass\\
+TC-02 & test\_ingest\_invalid\_schema & Sends malformed payloads missing mandatory fields to verify Pydantic rejects invalid inputs with HTTP 422. & Pass\\
+TC-03 & test\_async\_triage\_worker & Confirms log ingestion returns non-blockingly while delegating LLM inference to background workers. & Pass\\
+TC-04 & test\_cache\_deduplication & Submits identical stack traces consecutively to confirm matching SHA-256 hashes trigger a cache hit and bypass redundant LLM calls. & Pass\\
+TC-05 & test\_incident\_lifecycle & Validates \texttt{GET /api/v1/metrics} counters and database persistence across \texttt{Open} $\rightarrow$ \texttt{Investigating} $\rightarrow$ \texttt{Resolved} transitions. & Pass\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{High-Load Stress Benchmark (\texttt{scripts/benchmark.py})}
+System concurrency, throughput, and latency boundaries were evaluated using an asynchronous load generator built on Python \texttt{httpx.AsyncClient}, dispatching 200 concurrent log ingestion payloads against the FastAPI gateway. Table~\ref{tab:benchmarks} summarizes the empirical performance results.
+
+\begin{table}[H]
+\centering\small\singlespacing
+\caption{Empirical system performance benchmarks}\label{tab:benchmarks}
+\begin{tabularx}{\linewidth}{@{}l l X@{}}
+\toprule
+\textbf{Metric} & \textbf{Measured Value} & \textbf{Engineering Significance}\\
+\midrule
+Ingestion Throughput & \textbf{150.99 req/sec} & Confirms high-volume non-blocking ingestion capacity on a single ASGI worker process.\\
+Average Ingestion Latency & \textbf{127.22 ms} & Ensures upstream microservices experience minimal overhead when emitting error logs.\\
+P95 Tail Latency & \textbf{338.50 ms} & Demonstrates predictable response times even during concurrent traffic bursts.\\
+Concurrent Success Rate & \textbf{100.0\% (200/200)} & Zero dropped payloads or HTTP 500 server errors under burst load.\\
+Cache Hit RCA Resolution & \textbf{$< 10$\,ms} & Eliminates multi-second external LLM round-trips for duplicate error signatures.\\
+Integration Suite Execution & \textbf{5 / 5 Passed (2.23\,s)} & Validates end-to-end schema enforcement, worker delegation, and state persistence.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Live Dashboard Validation}
+Figure~\ref{fig:dashboard_live} shows the live authenticated SRE command center (\texttt{/dashboard}) displaying real-time KPI cards, service/status filtering controls, and active incident cards streamed from the backend.
+
+\diagram[max height=4.6in]{image_e5a3e5.png}{Authenticated Live SRE Incident Triage Dashboard}{fig:dashboard_live}
+
+% ================= REFERENCES =================
+\begin{thebibliography}{9}
+\bibitem{uml}
+Object Management Group, \textit{OMG Unified Modeling Language (UML), Version 2.5.1}, formal/17-12-05, December 2017.
+\bibitem{fastapi}
+S.~Ram\'irez, \textit{FastAPI Framework Documentation}. \url{https://fastapi.tiangolo.com}
+\bibitem{sqlalchemy}
+M.~Bayer, \textit{SQLAlchemy -- The Database Toolkit for Python}. \url{https://www.sqlalchemy.org}
+\bibitem{groq}
+Groq, Inc., \textit{GroqCloud API and LPU Inference Engine Documentation}. \url{https://console.groq.com/docs}
+\bibitem{tailwind}
+Tailwind Labs, \textit{Tailwind CSS Documentation}. \url{https://tailwindcss.com/docs}
+\bibitem{pytest}
+H.~Krekel et al., \textit{pytest: Rapid Simple Testing with Python}. \url{https://docs.pytest.org}
+\end{thebibliography}
+
+\end{document}
